@@ -3,6 +3,7 @@ package Exercises1;
 import java.util.stream.IntStream;
 
 /**
+ * TODO
  * Write a method which returns "TRUE" if String str1 is prefix of String str2
  * It's not allowed to use the built-in methods of String class for iterating, searching or etc.
  * The only method you can use is charAt()
