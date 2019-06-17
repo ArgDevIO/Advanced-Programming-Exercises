@@ -1,4 +1,8 @@
 package Pizzeria;
+import com.sun.xml.internal.bind.v2.TODO;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -19,6 +23,12 @@ class InvalidPizzaTypeException extends Exception {
         super(message);
     }
 }
+
+class ItemOutOfStockException extends Exception {
+    public ItemOutOfStockException(String message) {
+        super(message);
+    }
+}
 //Exceptions end
 
 class ExtraItem implements Item  {
@@ -34,7 +44,19 @@ class ExtraItem implements Item  {
 
     @Override
     public int getPrice() {
-        return 0;
+        switch (type){
+            case "Coke": return 5;
+            case "Ketchup": return 3;
+            default: return 0;
+        }
+    }
+
+    //TODO
+    //override equals() and hashCode() methods
+
+    @Override
+    public String toString() {
+        return "ExtraItem: " + type;
     }
 }
 
@@ -51,15 +73,59 @@ class PizzaItem implements Item {
 
     @Override
     public int getPrice() {
-        return 0;
+        switch (type){
+            case "Standard": return 10;
+            case "Pepperoni": return 12;
+            case "Vegetarian": return 8;
+            default: return 0;
+        }
+    }
+
+    //TODO
+    //override equals() and hashCode() methods
+
+    @Override
+    public String toString() {
+        return "PizzaItem: " + type;
     }
 }
 
 class Order {
-    private Item item;
-    private int count;
+    private ArrayList<Item> items;
+    private ArrayList<Integer> counts;
 
-    public Order() {
+    Order() {
+        items = new ArrayList<>();
+        counts = new ArrayList<>();
+    }
+
+    void addItem(Item item, int count) throws ItemOutOfStockException{
+        if (count > 10)
+            throw new ItemOutOfStockException(item + " is out of stock");
+
+        if(items.contains(item)){
+            int index = items.indexOf(item);
+            items.remove(index);
+            counts.remove(index);
+
+            items.add(index, item);
+            counts.add(index, count);
+        } else {
+            items.add(item);
+            counts.add(count);
+        }
+    }
+
+    int getPrice() {
+        int price = 0;
+        for (int i = 0; i < items.size(); i++) {
+            price += getTotalPrice(i);
+        }
+        return price;
+    }
+
+    int getTotalPrice(int i){
+        return items.get(i).getPrice() * counts.get(i);
     }
 }
 
