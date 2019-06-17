@@ -1,11 +1,6 @@
 package Pizzeria;
-import com.sun.xml.internal.bind.v2.TODO;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 interface Item {
     int getPrice();
@@ -19,14 +14,30 @@ class InvalidExtraTypeException extends Exception {
 }
 
 class InvalidPizzaTypeException extends Exception {
-    public InvalidPizzaTypeException(String message) {
+    InvalidPizzaTypeException(String message) {
         super(message);
     }
 }
 
 class ItemOutOfStockException extends Exception {
-    public ItemOutOfStockException(String message) {
+    ItemOutOfStockException(String message) {
         super(message);
+    }
+}
+
+class ArrayIndexOutOfBoundsException extends Exception {
+    ArrayIndexOutOfBoundsException(String message) {
+        super(message);
+    }
+}
+
+class EmptyOrder extends Exception {
+    EmptyOrder() {
+    }
+}
+
+class OrderLockedException extends Exception {
+    OrderLockedException() {
     }
 }
 //Exceptions end
@@ -51,12 +62,24 @@ class ExtraItem implements Item  {
         }
     }
 
-    //TODO
-    //override equals() and hashCode() methods
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ExtraItem extraItem = (ExtraItem) o;
+
+        return Objects.equals(type, extraItem.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return type != null ? type.hashCode() : 0;
+    }
 
     @Override
     public String toString() {
-        return "ExtraItem: " + type;
+        return type;
     }
 }
 
@@ -81,25 +104,41 @@ class PizzaItem implements Item {
         }
     }
 
-    //TODO
-    //override equals() and hashCode() methods
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PizzaItem pizzaItem = (PizzaItem) o;
+
+        return Objects.equals(type, pizzaItem.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return type != null ? type.hashCode() : 0;
+    }
 
     @Override
     public String toString() {
-        return "PizzaItem: " + type;
+        return type;
     }
 }
 
 class Order {
     private ArrayList<Item> items;
     private ArrayList<Integer> counts;
+    private boolean locked;
 
     Order() {
         items = new ArrayList<>();
         counts = new ArrayList<>();
     }
 
-    void addItem(Item item, int count) throws ItemOutOfStockException{
+    void addItem(Item item, int count) throws ItemOutOfStockException, OrderLockedException {
+        if (locked)
+            throw new OrderLockedException();
+
         if (count > 10)
             throw new ItemOutOfStockException(item + " is out of stock");
 
@@ -124,9 +163,33 @@ class Order {
         return price;
     }
 
-    int getTotalPrice(int i){
+    private int getTotalPrice(int i){
         return items.get(i).getPrice() * counts.get(i);
     }
+
+    void displayOrder(){
+        for (int i = 0; i < items.size(); i++) {
+            System.out.println(String.format("%3d.%-15sx%2d%5d$", i+1, items.get(i), counts.get(i), counts.get(i) * items.get(i).getPrice()));
+        }
+        System.out.println(String.format("Total:%21d$", getPrice()));
+    }
+
+    void removeItem(int idx) throws ArrayIndexOutOfBoundsException, OrderLockedException {
+        if (locked)
+            throw new OrderLockedException();
+        else {
+            if (items.remove(idx) == null)
+                throw new ArrayIndexOutOfBoundsException(idx + " out of bounds!");
+        }
+    }
+
+    void lock() throws EmptyOrder {
+        if (items.size() > 0)
+            locked = true;
+        else
+            throw new EmptyOrder();
+    }
+
 }
 
 public class PizzaOrderTest {
