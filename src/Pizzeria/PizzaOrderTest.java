@@ -55,6 +55,14 @@ class PizzaItem implements Item {
     }
 }
 
+class Order {
+    private Item item;
+    private int count;
+
+    public Order() {
+    }
+}
+
 public class PizzaOrderTest {
 
     public static void main(String[] args) {
